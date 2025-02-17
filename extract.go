@@ -8,39 +8,38 @@ import (
 	"os"
 )
 
-func Extract(config Config) ([]map[string]interface{}, error) {
-	// var data []map[string]interface{} // Remove this line
-
-	switch config.Input.Type {
-	case "csv":
-		data, err := extractFromCSV(config.Input.Path)
-		if err != nil {
-			fmt.Println("Error extracting from CSV:", err) // Add this line
-			return nil, err
-		}
-		fmt.Println("CSV data:", data) // Print the data here
-		return data, nil
-	case "json":
-		data, err := extractFromJSON(config.Input.Path)
-		if err != nil {
-			return nil, err
-		}
-		return data, nil
-	case "txt":
-		data, err := extractFromTXT(config.Input.Path)
-		if err != nil {
-			return nil, err
-		}
-		return data, nil
-	default:
-		return nil, fmt.Errorf("unsupported input type: %s", config.Input.Type)
-	}
+type Extractor interface {
+	Extract(path string) ([]map[string]interface{}, error)
 }
 
-func extractFromCSV(path string) ([]map[string]interface{}, error) {
+func Extract(config Config) ([]map[string]interface{}, error) {
+	extractors := map[string]Extractor{
+		"csv":  csvExtractor{},
+		"json": jsonExtractor{},
+		"txt":  txtExtractor{},
+	}
+
+	extractor, ok := extractors[config.Input.Type]
+	if !ok {
+		return nil, fmt.Errorf("unsupported input type: %s", config.Input.Type)
+	}
+
+	data, err := extractor.Extract(config.Input.Path)
+	if err != nil {
+		ErrorLogger.Println("Error extracting data:", err)
+		DebugLogger.Println("Error extracting data:", err)
+		return nil, err
+	}
+
+	return data, nil
+}
+
+type csvExtractor struct{}
+
+func (e csvExtractor) Extract(path string) ([]map[string]interface{}, error) {
 	f, err := os.Open(path)
 	if err != nil {
-		fmt.Println("Error opening CSV file:", err) // Add this line
+		fmt.Println("Error opening CSV file:", err)
 		return nil, err
 	}
 	defer f.Close()
@@ -48,7 +47,7 @@ func extractFromCSV(path string) ([]map[string]interface{}, error) {
 	reader := csv.NewReader(f)
 	headers, err := reader.Read()
 	if err != nil {
-		fmt.Println("Error reading CSV headers:", err) // Add this line
+		fmt.Println("Error reading CSV headers:", err)
 		return nil, err
 	}
 
@@ -59,7 +58,7 @@ func extractFromCSV(path string) ([]map[string]interface{}, error) {
 			break
 		}
 		if err != nil {
-			fmt.Println("Error reading CSV record:", err) // Add this line
+			fmt.Println("Error reading CSV record:", err)
 			return nil, err
 		}
 
@@ -73,7 +72,9 @@ func extractFromCSV(path string) ([]map[string]interface{}, error) {
 	return data, nil
 }
 
-func extractFromJSON(path string) ([]map[string]interface{}, error) {
+type jsonExtractor struct{}
+
+func (e jsonExtractor) Extract(path string) ([]map[string]interface{}, error) {
 	f, err := os.Open(path)
 	if err != nil {
 		return nil, err
@@ -90,7 +91,54 @@ func extractFromJSON(path string) ([]map[string]interface{}, error) {
 	return data, nil
 }
 
-func extractFromTXT(path string) ([]map[string]interface{}, error) {
-	// Implement TXT extraction logic here
-	return nil, nil
+type txtExtractor struct{}
+
+func (e txtExtractor) Extract(path string) ([]map[string]interface{}, error) {
+	f, err := os.Open(path)
+	if err != nil {
+		return nil, err
+	}
+	defer f.Close()
+
+	// Read the config to get the delimiter
+	config, err := LoadConfig(".")
+	if err != nil {
+		return nil, err
+	}
+
+	delimiter := config.Input.Delimiter
+	if delimiter == "" {
+		delimiter = "," // Default delimiter
+	}
+
+	reader := csv.NewReader(f)
+	reader.Comma = rune(delimiter[0]) // Set the delimiter
+
+	var data []map[string]interface{}
+	headers := []string{}
+	firstLine := true
+
+	for {
+		record, err := reader.Read()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			return nil, err
+		}
+
+		if firstLine {
+			headers = record
+			firstLine = false
+			continue
+		}
+
+		row := make(map[string]interface{})
+		for i, value := range record {
+			row[headers[i]] = value
+		}
+		data = append(data, row)
+	}
+
+	return data, nil
 }
