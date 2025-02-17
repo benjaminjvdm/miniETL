@@ -1,0 +1,9 @@
+input:
+  path: input.csv
+  type: csv
+output:
+  path: output.json
+  type: json
+transformations:
+  - field1: "expression1"
+  - field2: "expression2"
