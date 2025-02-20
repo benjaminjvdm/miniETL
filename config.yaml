@@ -1,6 +1,5 @@
 source:
   type: csv
-  path: data.csv
 transform:
   - type: rename
     fields:

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"io/ioutil"
 
 	"gopkg.in/yaml.v2"
@@ -44,5 +45,26 @@ func LoadConfig(filename string) (*Config, error) {
 		return nil, err
 	}
 
+	err = validateConfig(&config)
+	if err != nil {
+		return nil, err
+	}
+
 	return &config, nil
+}
+
+func validateConfig(config *Config) error {
+	if config.Source.Type == "" {
+		return fmt.Errorf("source type is required")
+	}
+	if config.Source.Path == "" {
+		return fmt.Errorf("source path is required")
+	}
+	if config.Destination.Type == "" {
+		return fmt.Errorf("destination type is required")
+	}
+	if config.Destination.Path == "" {
+		return fmt.Errorf("destination path is required")
+	}
+	return nil
 }

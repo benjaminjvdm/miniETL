@@ -4,12 +4,26 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"os"
 	"sync"
 )
 
 func main() {
 	configFile := flag.String("config", "config.yaml", "Path to the configuration file")
+	help := flag.Bool("help", false, "Show help message and exit")
+
+	flag.Usage = func() {
+		fmt.Fprintf(os.Stderr, "Usage: %s [options]\n", os.Args[0])
+		fmt.Fprintf(os.Stderr, "Options:\n")
+		flag.PrintDefaults()
+	}
+
 	flag.Parse()
+
+	if *help {
+		flag.Usage()
+		os.Exit(0)
+	}
 
 	fmt.Println("Starting miniETL...")
 
