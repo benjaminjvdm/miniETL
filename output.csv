@@ -1,4 +1,3 @@
-full_name,age,city
-John,30,New York
-Jane,25,London
-Peter,40,Paris
+city,salary,full_name,tax,age
+New York,50000,John,10000,30
+Paris,70000,Peter,14000,40

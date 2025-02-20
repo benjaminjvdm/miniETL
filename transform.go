@@ -16,6 +16,24 @@ func NewTransform(config TransformConfig) (Transform, error) {
 			return nil, fmt.Errorf("failed to create rename transform: %w", err)
 		}
 		return transform, nil
+	case "convert":
+		transform, err := NewConvertTransform(config.Fields)
+		if err != nil {
+			return nil, fmt.Errorf("failed to create convert transform: %w", err)
+		}
+		return transform, nil
+	case "filter":
+		transform, err := NewFilterTransform(config.Fields)
+		if err != nil {
+			return nil, fmt.Errorf("failed to create filter transform: %w", err)
+		}
+		return transform, nil
+	case "calculate":
+		transform, err := NewCalculateTransform(config.Fields)
+		if err != nil {
+			return nil, fmt.Errorf("failed to create calculate transform: %w", err)
+		}
+		return transform, nil
 	default:
 		return nil, fmt.Errorf("unsupported transform type: %s", config.Type)
 	}

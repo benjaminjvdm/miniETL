@@ -5,6 +5,19 @@ transform:
   - type: rename
     fields:
       name: full_name
+  - type: convert
+    fields:
+      age: int
+      salary: int
+  - type: filter
+    fields:
+      field: age
+      condition: greater_than
+      value: 25
+  - type: calculate
+    fields:
+      field: tax
+      expression: salary * 0.2
 destination:
   type: csv
   path: output.csv

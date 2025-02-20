@@ -1,4 +1,4 @@
-name,age,city
-John,30,New York
-Jane,25,London
-Peter,40,Paris
+name,age,city,salary
+John,30,New York,50000
+Jane,25,London,60000
+Peter,40,Paris,70000
