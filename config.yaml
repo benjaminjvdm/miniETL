@@ -1,21 +1,10 @@
-input:
-  path: input.txt
-  type: txt
-  delimiter: ","
-output:
-  path: output.db
-  type: sqlite
-database:
-  type: sqlite
-  path: output.db
-transformations:
-  - field: date
-    action: date_format
-    params:
-      format: "YYYY-MM-DD"
-  - field: custom_field
-    action: custom
-    params:
-      function: "customFunction"
-  - field1: "expression1"
-  - field2: "expression2"
+source:
+  type: csv
+  path: data.csv
+transform:
+  - type: rename
+    fields:
+      name: full_name
+destination:
+  type: csv
+  path: output.csv
