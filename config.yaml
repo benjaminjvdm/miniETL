@@ -5,5 +5,6 @@ output:
   path: output.json
   type: json
 transformations:
-  - field1: "expression1"
-  - field2: "expression2"
+  - combined: header1 + " - " + header2
+  - header1_upper: upper(header1)
+  - total_chars: len(header1) + len(header2)

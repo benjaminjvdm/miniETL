@@ -2,7 +2,7 @@
 
 ## Description
 
-This is a command-line ETL tool written in Go. It allows you to extract data from CSV, JSON, and TXT files, transform the data using user-defined Go functions or a built-in expression language, and load the transformed data into CSV, JSON, TXT, or SQLite databases.
+This is a command-line ETL tool written in Go. It allows you to extract data from CSV and TXT files, transform the data using a simple expression language, and load the transformed data into JSON, CSV, TXT, or SQLite databases.
 
 ## Configuration
 
@@ -11,7 +11,14 @@ The tool is configured using a YAML or TOML file. The configuration file specifi
 ## Usage
 
 ```
-go run main.go -config config.yaml
+go run . --config config.yaml
+```
+
+You can also build the application and run the binary:
+
+```
+go build -o etl-tool
+./etl-tool --config config.yaml
 ```
 
 ## Example Configuration
@@ -24,5 +31,6 @@ output:
   path: output.json
   type: json
 transformations:
-  - field1: "expression1"
-  - field2: "expression2"
+  - combined: header1 + " - " + header2
+  - header1_upper: upper(header1)
+  - total_chars: len(header1) + len(header2)

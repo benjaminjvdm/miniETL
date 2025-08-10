@@ -1,9 +1,6 @@
 package main
 
 import (
-	"fmt"
-	"path/filepath"
-
 	"github.com/spf13/viper"
 )
 
@@ -20,35 +17,19 @@ type Config struct {
 }
 
 func LoadConfig(path string) (Config, error) {
-	viper.SetConfigName("config")
-	viper.SetConfigType("yaml")
-	viper.AddConfigPath(path)
+	viper.SetConfigFile(path)
 
 	var config Config
 
-	// Get the absolute path to the config file
-	absPath, err := filepath.Abs(path)
+	err := viper.ReadInConfig()
 	if err != nil {
-		fmt.Printf("Error getting absolute path: %s\n", err)
-		return config, err
-	}
-
-	// Add the directory containing the config file to the search path
-	viper.AddConfigPath(filepath.Dir(absPath))
-
-	err = viper.ReadInConfig()
-	if err != nil {
-		fmt.Printf("Error reading config file: %s\n", err)
 		return config, err
 	}
 
 	err = viper.Unmarshal(&config)
 	if err != nil {
-		fmt.Printf("Unable to decode into struct: %v\n", err)
 		return config, err
 	}
-
-	fmt.Printf("Config values: %+v\n", config) // Print config values
 
 	return config, nil
 }

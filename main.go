@@ -1,52 +1,52 @@
 package main
 
 import (
-	"fmt"
-	"os"
-
-	"time"
-
 	"github.com/schollz/progressbar/v3"
+	"github.com/spf13/pflag"
 )
 
 func main() {
-	// Load configuration
-	config, err := LoadConfig("./config.yaml")
-	if err != nil {
-		fmt.Printf("Error loading config: %s\n", err)
-		os.Exit(1)
-	}
+	// Command-line flags
+	var configFile string
+	pflag.StringVar(&configFile, "config", "./config.yaml", "Path to the config file")
+	pflag.Parse()
 
-	fmt.Println("Config:", config) // Print the config
+	// Load configuration
+	InfoLogger.Println("Loading configuration from", configFile)
+	config, err := LoadConfig(configFile)
+	if err != nil {
+		ErrorLogger.Fatalf("Error loading config: %s", err)
+	}
+	InfoLogger.Println("Configuration loaded successfully")
+
+	bar := progressbar.Default(3, "ETL Process")
 
 	// Extract
+	InfoLogger.Println("Extracting data...")
 	data, err := Extract(config)
 	if err != nil {
-		fmt.Printf("Error extracting data: %s\n", err)
-		os.Exit(1)
+		ErrorLogger.Fatalf("Error extracting data: %s", err)
 	}
-
-	fmt.Println("Data:", data) // Print the data
+	InfoLogger.Printf("Extracted %d records", len(data))
+	bar.Add(1)
 
 	// Transform
+	InfoLogger.Println("Transforming data...")
 	data, err = Transform(data, config.Transformations)
 	if err != nil {
-		fmt.Printf("Error transforming data: %s\n", err)
-		os.Exit(1)
+		ErrorLogger.Fatalf("Error transforming data: %s", err)
 	}
+	InfoLogger.Println("Data transformed successfully")
+	bar.Add(1)
 
 	// Load
+	InfoLogger.Println("Loading data...")
 	err = Load(config, data)
 	if err != nil {
-		fmt.Printf("Error loading data: %s\n", err)
-		os.Exit(1)
+		ErrorLogger.Fatalf("Error loading data: %s", err)
 	}
+	InfoLogger.Println("Data loaded successfully")
+	bar.Add(1)
 
-	fmt.Println("ETL process completed.")
-
-	bar := progressbar.Default(100, "Processing")
-	for i := 0; i < 100; i++ {
-		time.Sleep(10 * time.Millisecond)
-		bar.Add(1)
-	}
+	InfoLogger.Println("ETL process completed successfully.")
 }

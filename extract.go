@@ -1,46 +1,29 @@
 package main
 
 import (
+	"bufio"
 	"encoding/csv"
 	"encoding/json"
-	"fmt"
 	"io"
 	"os"
 )
 
 func Extract(config Config) ([]map[string]interface{}, error) {
-	// var data []map[string]interface{} // Remove this line
-
 	switch config.Input.Type {
 	case "csv":
-		data, err := extractFromCSV(config.Input.Path)
-		if err != nil {
-			fmt.Println("Error extracting from CSV:", err) // Add this line
-			return nil, err
-		}
-		fmt.Println("CSV data:", data) // Print the data here
-		return data, nil
+		return extractFromCSV(config.Input.Path)
 	case "json":
-		data, err := extractFromJSON(config.Input.Path)
-		if err != nil {
-			return nil, err
-		}
-		return data, nil
+		return extractFromJSON(config.Input.Path)
 	case "txt":
-		data, err := extractFromTXT(config.Input.Path)
-		if err != nil {
-			return nil, err
-		}
-		return data, nil
+		return extractFromTXT(config.Input.Path)
 	default:
-		return nil, fmt.Errorf("unsupported input type: %s", config.Input.Type)
+		return nil, ErrInvalidInputType
 	}
 }
 
 func extractFromCSV(path string) ([]map[string]interface{}, error) {
 	f, err := os.Open(path)
 	if err != nil {
-		fmt.Println("Error opening CSV file:", err) // Add this line
 		return nil, err
 	}
 	defer f.Close()
@@ -48,7 +31,6 @@ func extractFromCSV(path string) ([]map[string]interface{}, error) {
 	reader := csv.NewReader(f)
 	headers, err := reader.Read()
 	if err != nil {
-		fmt.Println("Error reading CSV headers:", err) // Add this line
 		return nil, err
 	}
 
@@ -59,7 +41,6 @@ func extractFromCSV(path string) ([]map[string]interface{}, error) {
 			break
 		}
 		if err != nil {
-			fmt.Println("Error reading CSV record:", err) // Add this line
 			return nil, err
 		}
 
@@ -91,6 +72,25 @@ func extractFromJSON(path string) ([]map[string]interface{}, error) {
 }
 
 func extractFromTXT(path string) ([]map[string]interface{}, error) {
-	// Implement TXT extraction logic here
-	return nil, nil
+	f, err := os.Open(path)
+	if err != nil {
+		return nil, err
+	}
+	defer f.Close()
+
+	var data []map[string]interface{}
+	scanner := bufio.NewScanner(f)
+	for scanner.Scan() {
+		var row map[string]interface{}
+		if err := json.Unmarshal(scanner.Bytes(), &row); err != nil {
+			return nil, err
+		}
+		data = append(data, row)
+	}
+
+	if err := scanner.Err(); err != nil {
+		return nil, err
+	}
+
+	return data, nil
 }
