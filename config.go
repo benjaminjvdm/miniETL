@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"github.com/spf13/viper"
 )
 
@@ -21,14 +22,26 @@ func LoadConfig(path string) (Config, error) {
 
 	var config Config
 
-	err := viper.ReadInConfig()
-	if err != nil {
+	if err := viper.ReadInConfig(); err != nil {
 		return config, err
 	}
 
-	err = viper.Unmarshal(&config)
-	if err != nil {
+	if err := viper.Unmarshal(&config); err != nil {
 		return config, err
+	}
+
+	// Basic validation
+	if config.Input.Path == "" {
+		return config, fmt.Errorf("validation failed: Input.Path is required")
+	}
+	if config.Input.Type == "" {
+		return config, fmt.Errorf("validation failed: Input.Type is required")
+	}
+	if config.Output.Path == "" {
+		return config, fmt.Errorf("validation failed: Output.Path is required")
+	}
+	if config.Output.Type == "" {
+		return config, fmt.Errorf("validation failed: Output.Type is required")
 	}
 
 	return config, nil
